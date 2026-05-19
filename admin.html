@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATC Strips — Administración</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Courier New', monospace; background: #0D1117; color: #E6EDF3; min-height: 100vh; }
+.header { background: #161B22; border-bottom: 1px solid #21262D; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; }
+.logo { color: #58A6FF; font-size: 18px; font-weight: bold; letter-spacing: 3px; }
+.btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer;
+  font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; }
+.btn-primary { background: #1F6FEB; color: white; }
+.btn-primary:hover { background: #388BFD; }
+.btn-danger { background: #3D1A1A; color: #F85149; border: 1px solid #F85149; }
+.btn-danger:hover { background: #F85149; color: white; }
+.btn-success { background: #1C3A1C; color: #3FB950; border: 1px solid #3FB950; }
+.btn-success:hover { background: #3FB950; color: white; }
+.btn-warning { background: #3A2F00; color: #E3B341; border: 1px solid #E3B341; }
+.btn-warning:hover { background: #E3B341; color: #0D1117; }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-gray { background: #21262D; color: #8B949E; border: none; }
+.btn-gray:hover { color: #E6EDF3; }
+.container { max-width: 1000px; margin: 0 auto; padding: 24px; }
+.card { background: #161B22; border: 1px solid #21262D; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+.card-title { color: #58A6FF; font-size: 12px; font-weight: bold; letter-spacing: 2px; margin-bottom: 16px; }
+.login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.login-box { background: #161B22; border: 1px solid #21262D; border-radius: 10px; padding: 36px; width: 360px; }
+.login-title { color: #58A6FF; font-size: 20px; font-weight: bold; letter-spacing: 3px; text-align: center; margin-bottom: 8px; }
+.login-sub { color: #636366; font-size: 12px; text-align: center; margin-bottom: 24px; }
+input, select { width: 100%; background: #0D1117; border: 1px solid #30363D; border-radius: 5px;
+  color: #E6EDF3; font-family: 'Courier New', monospace; font-size: 13px; padding: 8px 12px; margin-bottom: 12px; }
+input:focus, select:focus { outline: none; border-color: #1F6FEB; }
+label { color: #8B949E; font-size: 11px; display: block; margin-bottom: 4px; }
+.error { color: #F85149; font-size: 12px; margin-top: 8px; text-align: center; }
+table { width: 100%; border-collapse: collapse; }
+th { color: #484F58; font-size: 10px; letter-spacing: 1px; padding: 8px 12px; text-align: left; border-bottom: 1px solid #21262D; }
+td { padding: 10px 12px; border-bottom: 1px solid #0D1117; font-size: 13px; }
+tr:hover td { background: #1C2128; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+.badge-admin { background: #1F3A6E; color: #58A6FF; }
+.badge-operador { background: #1C3A1C; color: #3FB950; }
+.badge-inactivo { background: #3D1A1A; color: #F85149; }
+.modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: #161B22; border: 1px solid #30363D; border-radius: 10px; padding: 28px; width: 420px; }
+.modal-title { color: #58A6FF; font-size: 13px; font-weight: bold; letter-spacing: 2px; margin-bottom: 20px; }
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.hidden { display: none; }
+.stats { display: flex; gap: 16px; margin-bottom: 20px; }
+.stat { background: #161B22; border: 1px solid #21262D; border-radius: 6px; padding: 16px 20px; flex: 1; text-align: center; }
+.stat-num { font-size: 28px; font-weight: bold; color: #58A6FF; }
+.stat-lbl { font-size: 10px; color: #484F58; letter-spacing: 1px; margin-top: 4px; }
+.actions { display: flex; gap: 6px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap" class="login-wrap">
+  <div class="login-box">
+    <div class="login-title">✈ ATC STRIPS</div>
+    <div class="login-sub">Panel de Administración</div>
+    <label>Usuario</label>
+    <input type="text" id="loginUser" placeholder="admin" />
+    <label>Contraseña</label>
+    <input type="password" id="loginPass" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="doLogin()">
+      Iniciar sesión
+    </button>
+    <div class="error" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="adminPanel" class="hidden">
+  <div class="header">
+    <span class="logo">✈ ATC STRIPS — ADMIN</span>
+    <div style="display:flex;gap:12px;align-items:center">
+      <span id="adminNombre" style="color:#8B949E;font-size:13px"></span>
+      <button class="btn btn-gray" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-lbl">USUARIOS TOTALES</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statActivos">—</div>
+        <div class="stat-lbl">ACTIVOS</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statAdmins">—</div>
+        <div class="stat-lbl">ADMINISTRADORES</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="card-title">USUARIOS DEL SISTEMA</div>
+        <button class="btn btn-primary btn-sm" onclick="abrirNuevo()">+ Nuevo usuario</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>USUARIO</th>
+            <th>NOMBRE</th>
+            <th>AEROPUERTO</th>
+            <th>ROL</th>
+            <th>ESTADO</th>
+            <th>CREADO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO USUARIO -->
+<div class="modal-bg" id="modalNuevo">
+  <div class="modal">
+    <div class="modal-title">NUEVO USUARIO</div>
+    <label>Usuario *</label>
+    <input type="text" id="nUser" placeholder="operador01" />
+    <label>Contraseña *</label>
+    <input type="password" id="nPass" placeholder="••••••••" />
+    <label>Nombre completo</label>
+    <input type="text" id="nNombre" placeholder="Juan Pérez" />
+    <label>Aeropuerto ICAO *</label>
+    <input type="text" id="nAero" placeholder="SAZM" />
+    <label>Rol</label>
+    <select id="nRol">
+      <option value="operador">Operador</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <div class="error" id="nErr"></div>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="cerrar('modalNuevo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crear()">Crear usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR USUARIO -->
+<div class="modal-bg" id="modalEditar">
+  <div class="modal">
+    <div class="modal-title">EDITAR USUARIO</div>
+    <input type="hidden" id="eId" />
+    <label>Nombre completo</label>
+    <input type="text" id="eNombre" />
+    <label>Aeropuerto ICAO</label>
+    <input type="text" id="eAero" />
+    <label>Rol</label>
+    <select id="eRol">
+      <option value="operador">Operador</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <label>Nueva contraseña (dejar vacío para no cambiar)</label>
+    <input type="password" id="ePass" placeholder="Nueva contraseña..." />
+    <div class="error" id="eErr"></div>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="cerrar('modalEditar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardar()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let TOKEN = localStorage.getItem('atc_admin_token') || '';
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  document.getElementById('loginErr').textContent = '';
+  if (!u || !p) { document.getElementById('loginErr').textContent = 'Completá usuario y contraseña'; return; }
+  try {
+    const fd = new FormData();
+    fd.append('username', u); fd.append('password', p);
+    const r = await fetch('/token', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) { document.getElementById('loginErr').textContent = d.detail || 'Error'; return; }
+    if (d.rol !== 'admin') { document.getElementById('loginErr').textContent = 'Solo administradores pueden acceder'; return; }
+    TOKEN = d.access_token;
+    localStorage.setItem('atc_admin_token', TOKEN);
+    mostrarPanel(d.nombre || d.username);
+    cargar();
+  } catch(e) { document.getElementById('loginErr').textContent = 'Error de conexión'; }
+}
+
+function mostrarPanel(nombre) {
+  document.getElementById('loginWrap').classList.add('hidden');
+  document.getElementById('adminPanel').classList.remove('hidden');
+  document.getElementById('adminNombre').textContent = nombre;
+}
+
+function logout() {
+  localStorage.removeItem('atc_admin_token');
+  TOKEN = '';
+  document.getElementById('loginWrap').classList.remove('hidden');
+  document.getElementById('adminPanel').classList.add('hidden');
+}
+
+async function cargar() {
+  const r = await fetch('/usuarios', { headers: { Authorization: 'Bearer ' + TOKEN } });
+  if (r.status === 401) { logout(); return; }
+  const lista = await r.json();
+  document.getElementById('statTotal').textContent = lista.length;
+  document.getElementById('statActivos').textContent = lista.filter(u => u.activo).length;
+  document.getElementById('statAdmins').textContent = lista.filter(u => u.rol === 'admin').length;
+  const tbody = document.getElementById('tabla');
+  tbody.innerHTML = '';
+  for (const u of lista) {
+    const tr = document.createElement('tr');
+    const data = encodeURIComponent(JSON.stringify(u));
+    tr.innerHTML = `
+      <td><strong>${u.username}</strong></td>
+      <td>${u.nombre || '—'}</td>
+      <td style="color:#58A6FF;font-weight:bold">${u.aeropuerto}</td>
+      <td><span class="badge badge-${u.rol}">${u.rol.toUpperCase()}</span></td>
+      <td><span class="badge ${u.activo ? 'badge-operador' : 'badge-inactivo'}">${u.activo ? 'ACTIVO' : 'INACTIVO'}</span></td>
+      <td style="color:#484F58;font-size:11px">${u.creado || '—'}</td>
+      <td><div class="actions">
+        <button class="btn btn-warning btn-sm" onclick="abrirEditar('${data}')">✏ Editar</button>
+        <button class="btn btn-${u.activo ? 'danger' : 'success'} btn-sm" onclick="toggle('${u.id}',${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminar('${u.id}','${u.username}')">✕</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function abrirNuevo() {
+  ['nUser','nPass','nNombre','nAero'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nRol').value = 'operador';
+  document.getElementById('nErr').textContent = '';
+  document.getElementById('modalNuevo').classList.add('open');
+}
+
+async function crear() {
+  const datos = {
+    username: document.getElementById('nUser').value.trim(),
+    password: document.getElementById('nPass').value,
+    nombre: document.getElementById('nNombre').value.trim(),
+    aeropuerto: document.getElementById('nAero').value.trim().toUpperCase(),
+    rol: document.getElementById('nRol').value,
+  };
+  if (!datos.username || !datos.password || !datos.aeropuerto) {
+    document.getElementById('nErr').textContent = 'Completá los campos obligatorios (*)'; return;
+  }
+  const r = await fetch('/usuarios', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos)
+  });
+  const d = await r.json();
+  if (!r.ok) { document.getElementById('nErr').textContent = d.detail || 'Error'; return; }
+  cerrar('modalNuevo'); cargar();
+}
+
+function abrirEditar(data) {
+  const u = JSON.parse(decodeURIComponent(data));
+  document.getElementById('eId').value = u.id;
+  document.getElementById('eNombre').value = u.nombre || '';
+  document.getElementById('eAero').value = u.aeropuerto;
+  document.getElementById('eRol').value = u.rol;
+  document.getElementById('ePass').value = '';
+  document.getElementById('eErr').textContent = '';
+  document.getElementById('modalEditar').classList.add('open');
+}
+
+async function guardar() {
+  const uid = document.getElementById('eId').value;
+  const datos = {
+    nombre: document.getElementById('eNombre').value.trim(),
+    aeropuerto: document.getElementById('eAero').value.trim().toUpperCase(),
+    rol: document.getElementById('eRol').value,
+  };
+  const pass = document.getElementById('ePass').value;
+  if (pass) datos.password = pass;
+  const r = await fetch('/usuarios/' + uid, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos)
+  });
+  if (!r.ok) { document.getElementById('eErr').textContent = 'Error al guardar'; return; }
+  cerrar('modalEditar'); cargar();
+}
+
+async function toggle(uid, activo) {
+  await fetch('/usuarios/' + uid, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ activo })
+  });
+  cargar();
+}
+
+async function eliminar(uid, username) {
+  if (!confirm('¿Eliminar el usuario ' + username + '?\nEsta acción no se puede deshacer.')) return;
+  await fetch('/usuarios/' + uid, { method: 'DELETE', headers: { Authorization: 'Bearer ' + TOKEN } });
+  cargar();
+}
+
+function cerrar(id) { document.getElementById(id).classList.remove('open'); }
+
+// Auto-login si hay token guardado
+if (TOKEN) {
+  fetch('/me', { headers: { Authorization: 'Bearer ' + TOKEN } })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (d && d.rol === 'admin') { mostrarPanel(d.nombre || d.username); cargar(); }
+      else { localStorage.removeItem('atc_admin_token'); TOKEN = ''; }
+    }).catch(() => { localStorage.removeItem('atc_admin_token'); TOKEN = ''; });
+}
+</script>
+</body>
+</html>
