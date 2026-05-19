@@ -67,8 +67,21 @@ tr:hover td { background: #1C2128; }
     <label>Usuario</label>
     <input type="text" id="loginUser" placeholder="admin" />
     <label>Contraseña</label>
-    <input type="password" id="loginPass" placeholder="••••••••"
-      onkeydown="if(event.key==='Enter')doLogin()" />
+    <div style="position:relative;display:flex;align-items:center">
+      <input type="password" id="loginPass" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()"
+        style="padding-right:44px;width:100%" />
+      <button type="button" onclick="togglePass('loginPass',this)"
+        style="position:absolute;right:10px;background:none;border:none;
+               cursor:pointer;padding:0;display:flex;align-items:center;color:#8B949E"
+        title="Mostrar/ocultar contraseña">
+        <svg id="eyeLogin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
     <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="doLogin()">
       Iniciar sesión
     </button>
@@ -132,7 +145,19 @@ tr:hover td { background: #1C2128; }
     <label>Usuario *</label>
     <input type="text" id="nUser" placeholder="operador01" />
     <label>Contraseña *</label>
-    <input type="password" id="nPass" placeholder="••••••••" />
+    <div style="position:relative;display:flex;align-items:center">
+      <input type="password" id="nPass" placeholder="••••••••" style="padding-right:44px;width:100%" />
+      <button type="button" onclick="togglePass('nPass',this)"
+        style="position:absolute;right:10px;background:none;border:none;
+               cursor:pointer;padding:0;display:flex;align-items:center;color:#8B949E"
+        title="Mostrar/ocultar contraseña">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
     <label>Nombre completo</label>
     <input type="text" id="nNombre" placeholder="Juan Pérez" />
     <label>Aeropuerto ICAO *</label>
@@ -165,7 +190,19 @@ tr:hover td { background: #1C2128; }
       <option value="admin">Administrador</option>
     </select>
     <label>Nueva contraseña (dejar vacío para no cambiar)</label>
-    <input type="password" id="ePass" placeholder="Nueva contraseña..." />
+    <div style="position:relative;display:flex;align-items:center">
+      <input type="password" id="ePass" placeholder="Nueva contraseña..." style="padding-right:44px;width:100%" />
+      <button type="button" onclick="togglePass('ePass',this)"
+        style="position:absolute;right:10px;background:none;border:none;
+               cursor:pointer;padding:0;display:flex;align-items:center;color:#8B949E"
+        title="Mostrar/ocultar contraseña">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
     <div class="error" id="eErr"></div>
     <div class="modal-btns">
       <button class="btn btn-gray" onclick="cerrar('modalEditar')">Cancelar</button>
@@ -310,6 +347,20 @@ async function eliminar(uid, username) {
 }
 
 function cerrar(id) { document.getElementById(id).classList.remove('open'); }
+
+function togglePass(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.style.color = showing ? '#8B949E' : '#1F6FEB';
+  // Swap icon: eye vs eye-off
+  btn.querySelector('svg').innerHTML = showing
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>' +
+      '<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>' +
+      '<line x1="1" y1="1" x2="23" y2="23"/>';
+  input.focus();
+}
 
 // Auto-login si hay token guardado
 if (TOKEN) {
