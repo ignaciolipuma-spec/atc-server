@@ -12,7 +12,10 @@ import json
 import os
 import uuid
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:bVxVzQkPBLTPVNFtQUpeuEopUmcKZXsX@postgres.railway.internal:5432/railway")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL no configurada")
+
 SECRET_KEY   = os.environ.get("SECRET_KEY", "atc-strips-clave-secreta-2024")
 ALGORITHM    = "HS256"
 TOKEN_EXPIRE = 480
@@ -285,20 +288,7 @@ async def websocket_endpoint(ws: WebSocket, aeropuerto: str):
 
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin():
-    return HTMLResponse(content=open(os.path.join(os.path.dirname(__file__), "admin.html"), encoding="utf-8").read() if os.path.exists(os.path.join(os.path.dirname(__file__), "admin.html")) else ADMIN_HTML_INLINE)
-
-ADMIN_HTML_INLINE = """<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ATC Admin</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Courier New',monospace;background:#0D1117;color:#E6EDF3;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.box{background:#161B22;border:1px solid #21262D;border-radius:10px;padding:36px;width:360px;text-align:center}
-h1{color:#58A6FF;letter-spacing:3px;margin-bottom:8px}p{color:#636366;font-size:12px;margin-bottom:24px}
-input{width:100%;background:#0D1117;border:1px solid #30363D;border-radius:5px;color:#E6EDF3;font-family:'Courier New',monospace;font-size:13px;padding:8px 12px;margin-bottom:12px}
-button{width:100%;background:#1F6FEB;color:white;border:none;border-radius:5px;padding:10px;font-family:'Courier New',monospace;font-weight:bold;cursor:pointer;margin-top:8px}
-.err{color:#F85149;font-size:12px;margin-top:8px}</style></head>
-<body><div class="box"><h1>✈ ATC STRIPS</h1><p>Panel de Administración</p>
-<input type="text" id="u" placeholder="Usuario"><input type="password" id="p" placeholder="Contraseña">
-<button onclick="login()">Iniciar sesión</button><div class="err" id="e"></div></div>
-<script>async function login(){const fd=new FormData();fd.append('username',document.getElementById('u').value);fd.append('password',document.getElementById('p').value);
-const r=await fetch('/token',{method:'POST',body:fd});const d=await r.json();
-if(!r.ok||d.rol!=='admin'){document.getElementById('e').textContent=d.detail||'Solo administradores';return;}
-localStorage.setItem('t',d.access_token);window.location='/admin/panel';}
-</script></body></html>"""
+    html_path = os.path.join(os.path.dirname(__file__), "admin.html")
+    if os.path.exists(html_path):
+        return HTMLResponse(content=open(html_path, encoding="utf-8").read())
+    return HTMLResponse(content="<h1>Panel no disponible</h1>")
